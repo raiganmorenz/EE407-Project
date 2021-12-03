@@ -11,7 +11,6 @@
 #include "ns3/netanim-module.h"
 #include <iostream>
 #include <cmath>
-#include <vector>
 
 using namespace ns3;
 
@@ -48,8 +47,6 @@ private:
   bool pcap;
   /// Print routes if true
   bool printRoutes;
-  /// Nodes to remove
-  std::vector<int> remove = {6, 7, 8, 9, 15, 16, 17, 18, 23, 24, 25, 35, 36, 37, 45, 46, 47};
   //\}
 
   ///\name network
@@ -65,7 +62,7 @@ private:
   void InstallInternetStack ();
   void InstallApplications ();
   void CreateBeacons();
-  void RemoveNodes(std::vector<int> v);
+  void PrintLoc();
 };
 
 int main (int argc, char **argv)
@@ -118,15 +115,14 @@ DVHopExample::Run ()
 
   CreateBeacons();
 
-  RemoveNodes(remove);
-
   std::cout << "Starting simulation for " << totalTime << " s ...\n";
 
   Simulator::Stop (Seconds (totalTime));
 
   AnimationInterface anim("animation.xml");
 
-  Simulator::Run();
+  Simulator::Run ();
+  PrintLoc();
   Simulator::Destroy ();
 }
 
@@ -144,9 +140,9 @@ DVHopExample::CreateNodes ()
   for (uint32_t i = 0; i < size; ++i)
     {
       std::ostringstream os;
-      os << i;
-      std::cout << "Creating node: "<< os.str ()<< std::endl;
-      Names::Add (os.str(), nodes.Get (i));
+      os << "node-" << i;
+      std::cout << "Creating node: "<< os.str ()<< std::endl ;
+      Names::Add (os.str (), nodes.Get (i));
     }
   // Create static grid
   MobilityHelper mobility;
@@ -208,7 +204,7 @@ DVHopExample::CreateDevices ()
 
   if (pcap)
     {
-      wifiPhy.EnablePcapAll (std::string ("crit"));
+      wifiPhy.EnablePcapAll (std::string ("aodv"));
     }
 }
 
@@ -234,14 +230,8 @@ DVHopExample::InstallInternetStack ()
     }
 }
 
-void DVHopExample::RemoveNodes(std::vector<int> v){
-  Ptr<Ipv4RoutingProtocol> proto;
-  Ptr<dvhop::RoutingProtocol> dvhop;
-  for(auto i = v.begin(); i != v.end(); ++i){
-    proto = nodes.Get(*i)->GetObject<Ipv4>()->GetRoutingProtocol();
-    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
-    if(dvhop->IsBeacon()){
-      //fill in node removal
-    }
-  }
+void DVHopExample::PrintLoc(){
+  
+
+
 }
