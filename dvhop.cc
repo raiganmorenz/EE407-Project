@@ -517,8 +517,8 @@ namespace ns3 {
         newy = fHeader.GetYPosition() - (50 * std::floor(diff / 10));
         if((fHeader.GetBeaconAddress().Get() % 10) <= (diff % 10)){
           newy -= 50;
-          newx = fHeader.GetXPosition() + (50 * ((diff % 10) + ((fHeader.GetBeaconAddress().Get() % 10))));
-          std::cout << "DEBUG--- Y decrease 50, X increase " << 50 * ((diff % 10) + ((fHeader.GetBeaconAddress().Get() % 10))) << std::endl;
+          newx = fHeader.GetXPosition() + (50 * (((receiver.Get()) % 10) - ((fHeader.GetBeaconAddress().Get()) % 10)));
+          std::cout << "DEBUG--- Y decrease 50, X increase " << (int) (50 * (((receiver.Get()) % 10) - ((fHeader.GetBeaconAddress().Get()) % 10))) << std::endl;
         } else {
           newx = fHeader.GetXPosition() - (50 * (diff % 10));
           std::cout << "DEBUG--- X decrease " << 50 * (diff % 10)<< std::endl;
@@ -528,8 +528,8 @@ namespace ns3 {
         newy = fHeader.GetYPosition() + (50 * std::floor(diff / 10));
         if((fHeader.GetBeaconAddress().Get() % 10) <= (diff % 10)){
           newy += 50;
-          newx = fHeader.GetXPosition() - 50 * (((fHeader.GetBeaconAddress().Get() % 10)) - (diff % 10));
-          std::cout << "DEBUG--- Y increase 50, X decrease " << 50 * (((fHeader.GetBeaconAddress().Get() % 10)) - (diff % 10)) << std::endl;
+          newx = fHeader.GetXPosition() - (50 * (((receiver.Get()) % 10) + ((fHeader.GetBeaconAddress().Get()) % 10)));
+          std::cout << "DEBUG--- Y increase 50, X decrease " << (int) (50 * (((receiver.Get()) % 10) + ((fHeader.GetBeaconAddress().Get()) % 10))) << std::endl;
         } else {
           newx = fHeader.GetXPosition() + (50 * (diff % 10));
           std::cout << "DEBUG--- X increase " << 50 * (diff % 10)<< std::endl;
@@ -571,7 +571,7 @@ namespace ns3 {
 	}
     }
 
-
+    
 
 
   }

@@ -11,6 +11,8 @@
 #include "ns3/netanim-module.h"
 #include <iostream>
 #include <cmath>
+#include <vector>
+#include <algorithm>
 
 using namespace ns3;
 
@@ -158,9 +160,9 @@ DVHopExample::CreateNodes ()
 }
 
 void
-DVHopExample::CreateBeacons ()
+DVHopExample::CreateBeacons()
 {
-  int b1 = rand() % size;
+ /* int b1 = rand() % size;
   int b2 = rand() % size;
   while(b2 == b1){
     b2 = rand() % size;
@@ -175,17 +177,59 @@ DVHopExample::CreateBeacons ()
   dvhop->SetIsBeacon (true);
   dvhop->SetPosition (400, 0);
 
-
   proto = nodes.Get (24)->GetObject<Ipv4>()->GetRoutingProtocol ();
   dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
   dvhop->SetIsBeacon (true);
   dvhop->SetPosition (200, 100);
 
-
   proto = nodes.Get (37)->GetObject<Ipv4>()->GetRoutingProtocol ();
   dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
   dvhop->SetIsBeacon (true);
   dvhop->SetPosition (350, 150);
+  */
+
+  int n = 0;
+  do {
+  std::cout << "Enter the percentage of beacons you want (1 - 12.5%, 2 - 25%, 3 - 50%): ";
+  std::cin >> n;
+  } while ((n != 1) && (n != 2) && (n != 3));
+  std::cout << std::endl;
+
+  int beacnum = 0;
+  if(n == 1){
+    beacnum = size/8;
+  } else if (n == 2){
+    beacnum = size/4;
+  } else if (n == 3){
+    beacnum = size/2;
+  }
+
+  std::vector<int> v;
+  int randnum;
+  for(int i = 0; i < beacnum; i++){
+    randnum = rand() % size;
+    if(!(std::find(v.begin(), v.end(), randnum) != v.end())){
+      v.push_back(randnum);
+    } else {
+      i--;
+    }
+  }
+
+  Ptr<Ipv4RoutingProtocol> proto;
+  Ptr<dvhop::RoutingProtocol> dvhop;
+  double bx;
+  double by;
+
+  for(auto x : v){
+    proto = nodes.Get(x)->GetObject<Ipv4>()->GetRoutingProtocol();
+    dvhop = DynamicCast<dvhop::RoutingProtocol> (proto);
+    dvhop->SetIsBeacon(true);
+
+    by = std::floor(((x)/10) * 50);
+    bx = ((x) % 10) * 50;
+        
+    dvhop->SetPosition(bx, by);
+  }
 
 }
 
