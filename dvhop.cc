@@ -13,8 +13,6 @@
 #include "ns3/string.h"
 #include "ns3/pointer.h"
 
-
-
 NS_LOG_COMPONENT_DEFINE ("DVHopRoutingProtocol");
 
 
@@ -136,7 +134,7 @@ namespace ns3 {
     bool
     RoutingProtocol::RouteInput (Ptr<const Packet> p, const Ipv4Header &header, Ptr<const NetDevice> idev, UnicastForwardCallback ufcb, MulticastForwardCallback mfcb, LocalDeliverCallback ldcb, ErrorCallback errcb)
     {
-      NS_LOG_FUNCTION ("Packet received: " << p->GetUid () << header.GetDestination () << idev->GetAddress ());
+      //NS_LOG_FUNCTION ("Packet received: " << p->GetUid () << header.GetDestination () << idev->GetAddress ());
 
       if(m_socketAddresses.empty ())
         {//No interface is listening
@@ -171,7 +169,7 @@ namespace ns3 {
                   Ptr<Packet> packet = p->Copy ();
                   if(  ! ldcb.IsNull () )
                     {//Forward the packet to further processing to the LocalDeliveryCallback defined
-                      NS_LOG_DEBUG("Forwarding packet to Local Delivery Callback");
+                      //NS_LOG_DEBUG("Forwarding packet to Local Delivery Callback");
                       ldcb(packet,header,iif);
                     }
                   else
@@ -186,7 +184,7 @@ namespace ns3 {
                     }
                   else
                     {
-                      NS_LOG_LOGIC ("TTL Exceeded, drop packet");
+                      //NS_LOG_LOGIC ("TTL Exceeded, drop packet");
                     }
                   return true;
                 }
@@ -504,9 +502,8 @@ namespace ns3 {
 
       FloodingHeader fHeader;
       packet->RemoveHeader (fHeader);
-      NS_LOG_DEBUG ("Update the entry for: " << fHeader.GetBeaconAddress ());
       UpdateHopsTo (fHeader.GetBeaconAddress (), fHeader.GetHopCount () + 1, fHeader.GetXPosition (), fHeader.GetYPosition ());
-      std::cout << "---DEBUG: HopCount: " << fHeader.GetHopCount() + 1 << " | XPos: " << fHeader.GetXPosition() << " | YPos: " << fHeader.GetYPosition() << std::endl;
+      std::cout << "---Beacon Position--- IP: " << fHeader.GetBeaconAddress() << " | HopCount: " << fHeader.GetHopCount() + 1 << " | XPos: " << fHeader.GetXPosition() << " | YPos: " << fHeader.GetYPosition() << std::endl;
       
       uint32_t diff;
       uint32_t newx = 0; 
@@ -515,6 +512,7 @@ namespace ns3 {
       if(fHeader.GetBeaconAddress().Get() > receiver.Get()){
         diff = fHeader.GetBeaconAddress().Get() - receiver.Get(); //Left and Up
         newy = fHeader.GetYPosition() - (50 * std::floor(diff / 10));
+        std::cout << "DEBUG--- Y decrease " << (50 * std::floor(diff / 10)) << std::endl;
         if((fHeader.GetBeaconAddress().Get() % 10) <= (diff % 10)){
           newy -= 50;
           newx = fHeader.GetXPosition() + (50 * (((receiver.Get()) % 10) - ((fHeader.GetBeaconAddress().Get()) % 10)));
@@ -537,9 +535,48 @@ namespace ns3 {
       }
 
       std::cout << "Difference: " << diff << std::endl;
-      std::cout << "XPos: " << newx << " | YPos: " << newy << std::endl;
-    }
+      std::cout << "---Node's position--- XPos: " << newx << " | YPos: " << newy << std::endl;
 
+      
+
+      point approx;
+      point p1 = {4.0,4.0};
+      point p2 = {9.0,7.0};
+      point p3 = {9.0,1.0};
+      double r1, r2, r3;
+      r1 = 4;
+      r2 = 3;
+      r3 = 3.25;
+
+      approx = trilateration(p1, p2, p3, r1, r2, r3);
+      std::cout << "TRILATERATION TEST: (" << approx.x << ", " << approx.y << ")" << std::endl; 
+      std::cout << "------------------------------------" << std::endl;
+    }
+    //TRILATERATION
+
+      float RoutingProtocol::norm(point p){
+        return pow(pow(p.x,2)+pow(p.y,2),.5);
+      }
+
+      point RoutingProtocol::trilateration(point p1, point p2, point p3, double r1, double r2, double r3){
+        point result;
+        double p2p = pow(pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2),0.5);
+        point ex = {(p2.x-p1.x)/p2p, (p2.y-p1.y)/p2p};
+        point aux = {p3.x-p1.x,p3.y-p1.y};
+        double i = ex.x * aux.x + ex.y * aux.y;
+        point aux2 = {p3.x-p1.x-i*ex.x, p3.y-p1.y-i*ex.y};
+        point ey = {aux2.x / norm(aux2), aux2.y / norm(aux2)};
+
+        double j = ey.x * aux.x + ey.y * aux.y;
+        double x = (pow(r1,2) - pow(r2,2) + pow(p2p,2)) / (2 * p2p);
+        double y = (pow(r1,2) - pow(r3,2) + pow(i,2) + pow(j,2)) / (2*j) - i*x/j;
+
+        double finX = p1.x + x*ex.x + y*ey.x;
+        double finY = p1.y + x*ex.y + y*ey.y;
+        result.x = finX;
+        result.y = finY;
+        return result;
+      }
     Ptr<Socket>
     RoutingProtocol::FindSocketWithInterfaceAddress (Ipv4InterfaceAddress addr) const
     {

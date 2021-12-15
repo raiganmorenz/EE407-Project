@@ -18,6 +18,9 @@
 #include <map>
 #include <cmath>
 
+struct point{
+  double x, y;
+};
 
 namespace ns3 {
   namespace dvhop{
@@ -67,6 +70,9 @@ namespace ns3 {
       //In case there exists a route to the destination, the packet is forwarded
       bool        Forwarding(Ptr<const Packet> p, const Ipv4Header &header, UnicastForwardCallback ufcb, ErrorCallback errcb);
       void        SendUnicastTo(Ptr<Socket> socket, Ptr<Packet> packet, Ipv4Address destination);
+
+      float norm(point p);
+      point trilateration(point b1, point b2, point b3, double r1, double r2, double r3);
 
       //HELLO intervals and timers
       Time   HelloInterval;
